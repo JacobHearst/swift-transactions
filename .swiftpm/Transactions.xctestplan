@@ -1,0 +1,24 @@
+{
+  "configurations" : [
+    {
+      "id" : "C8FD44D8-928C-4361-B591-42CF45E2B964",
+      "name" : "Test Scheme Action",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "codeCoverage" : false
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:",
+        "identifier" : "TransactionsTests",
+        "name" : "TransactionsTests"
+      }
+    }
+  ],
+  "version" : 1
+}
