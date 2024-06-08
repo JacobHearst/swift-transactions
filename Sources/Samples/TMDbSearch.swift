@@ -25,7 +25,7 @@ struct GetDetails: Transaction {
     }
 }
 
-struct SearchWithDetails: TransactionBody {
+struct SearchWithDetails: CompositeTransaction {
     var body: AnyTransaction<String, [Media]> {
         Pipe {
             Search().map(\.results)

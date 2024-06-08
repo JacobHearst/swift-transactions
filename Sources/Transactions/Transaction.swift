@@ -5,7 +5,7 @@
 import Foundation
 
 // MARK: Transaction
-public protocol Transaction: Sendable {
+@rethrows public protocol Transaction: Sendable {
     associatedtype Input: Sendable
     associatedtype Output: Sendable
 
@@ -15,7 +15,7 @@ public protocol Transaction: Sendable {
 }
 
 // MARK: Bodies
-public protocol TransactionBody: Transaction {
+public protocol CompositeTransaction: Transaction {
     associatedtype _Body
     typealias Body = _Body
 
@@ -23,14 +23,14 @@ public protocol TransactionBody: Transaction {
     var body: Body { get }
 }
 
-extension TransactionBody where Body: Transaction, Body.Input == Input, Body.Output == Output {
+extension CompositeTransaction where Body: Transaction, Body.Input == Input, Body.Output == Output {
     @inlinable
     public func run(on input: Body.Input) async throws -> Body.Output {
         try await self.body.run(on: input)
     }
 }
 
-// MARK: callAsFunction and convenience overloads
+// MARK: callAsFunction and convenience `run(on:)` overloads
 extension Transaction {
     @inlinable
     public func callAsFunction(input: Input) async throws -> Output {
@@ -73,3 +73,5 @@ extension Transaction where Input == Void, Output == Void {
         _ = try await run(on: ())
     }
 }
+
+public struct EarlyExit: Error {}

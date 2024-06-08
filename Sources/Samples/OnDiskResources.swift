@@ -31,6 +31,16 @@ public struct DecodeModel<T: Decodable>: Transaction {
     }
 }
 
+struct LoadModel: CompositeTransaction {
+    var body: AnyTransaction<URL, Model> {
+        Pipe {
+            LoadData()
+            DecodeModel<Model>()
+        }
+        .eraseToAnyTransaction()
+    }
+}
+
 public struct IncrementModel: Transaction {
     public init() {}
     public func run(on input: Model) async throws -> Model {
