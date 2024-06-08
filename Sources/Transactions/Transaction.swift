@@ -4,44 +4,33 @@
 
 import Foundation
 
-public protocol Transaction {
+// MARK: Transaction
+public protocol Transaction: Sendable {
     associatedtype Input: Sendable
     associatedtype Output: Sendable
 
-    associatedtype _Body
-    typealias Body = _Body
-
+    @Sendable
     @inlinable
     func run(on input: Input) async throws -> Output
+}
+
+// MARK: Bodies
+public protocol TransactionBody: Transaction {
+    associatedtype _Body
+    typealias Body = _Body
 
     @TransactionBuilder<Input>
     var body: Body { get }
 }
 
-extension Transaction where Body == Never {
-    /// A non-existent body.
-    ///
-    /// > Warning: Do not invoke this property directly. It will trigger a fatal error at runtime.
-    @_transparent
-    public var body: Body {
-        fatalError(
-      """
-      '\(Self.self)' has no body. …
-
-      Do not access a transaction's 'body' property directly, as it may not exist. To run a transaction, \
-      call 'Transaction.run(on:)', instead.
-      """
-        )
-    }
-}
-
-extension Transaction where Body: Transaction, Body.Input == Input, Body.Output == Output {
+extension TransactionBody where Body: Transaction, Body.Input == Input, Body.Output == Output {
     @inlinable
     public func run(on input: Body.Input) async throws -> Body.Output {
         try await self.body.run(on: input)
     }
 }
 
+// MARK: callAsFunction and convenience overloads
 extension Transaction {
     @inlinable
     public func callAsFunction(input: Input) async throws -> Output {

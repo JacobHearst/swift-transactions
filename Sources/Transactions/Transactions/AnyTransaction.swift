@@ -12,7 +12,7 @@ extension Transaction {
 
 public struct AnyTransaction<Input, Output>: Transaction {
     @usableFromInline
-    let runner: (Input) async throws -> Output
+    let runner: @Sendable (Input) async throws -> Output
 
     @inlinable
     public init<T: Transaction>(_ transaction: T) where T.Input == Input, T.Output == Output {
@@ -20,7 +20,7 @@ public struct AnyTransaction<Input, Output>: Transaction {
     }
 
     @inlinable
-    public init(_ run: @escaping (Input) async throws -> Output) {
+    public init(_ run: @Sendable @escaping (Input) async throws -> Output) {
         self.runner = run
     }
 

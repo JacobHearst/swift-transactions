@@ -7,7 +7,7 @@ import Foundation
 extension Transaction {
     @inlinable
     public func flatMap<NewTransaction: Transaction>(
-        transform: @escaping (Output) -> NewTransaction
+        transform: @Sendable @escaping (Output) -> NewTransaction
     ) -> Transactions.FlatMap<NewTransaction, Self> {
         .init(upstream: self, transform: transform)
     }
@@ -17,10 +17,10 @@ extension Transactions {
     public struct FlatMap<NewTransaction: Transaction, Upstream: Transaction>: Transaction where NewTransaction.Input == Upstream.Input {
 
         public let upstream: Upstream
-        public let transform: (Upstream.Output) async throws -> NewTransaction
+        public let transform: @Sendable (Upstream.Output) async throws -> NewTransaction
 
         @inlinable
-        public init(upstream: Upstream, transform: @escaping (Upstream.Output) async throws -> NewTransaction) {
+        public init(upstream: Upstream, transform: @Sendable @escaping (Upstream.Output) async throws -> NewTransaction) {
             self.upstream = upstream
             self.transform = transform
         }

@@ -6,32 +6,33 @@ import Foundation
 import Transactions
 import TMDb
 
-struct SearchPeople: Transaction {
-    func run(on query: String) async throws -> PersonPageableList {
-        try await Current.tmdb.searchPeople(query)
+struct Search: Transaction {
+    func run(on query: String) async throws -> MediaPageableList {
+        try await Current.tmdb.search(query)
     }
 }
 
-struct SearchMovies: Transaction {
-    func run(on query: String) async throws -> MoviePageableList {
-        try await Current.tmdb.searchMovies(query)
-    }
-}
-
-struct SearchTVSeries: Transaction {
-    func run(on query: String) async throws -> TVSeriesPageableList {
-        try await Current.tmdb.searchTV(query)
-    }
-}
-
-struct SearchTMDb: Transaction {
-    var body: AnyTransaction<String, ([Person], [Movie], [TVSeries])> {
-        Concurrent {
-            SearchPeople()
-            SearchMovies()
-            SearchTVSeries()
+struct GetDetails: Transaction {
+    func run(on input: Media) async throws -> Media {
+        switch input {
+        case .movie(let movie):
+            try await .movie(Current.tmdb.movieDetails(movie.id))
+        case .tvSeries(let series):
+            try await .tvSeries(Current.tmdb.tvDetails(series.id))
+        case .person(let person):
+            try await .person(Current.tmdb.personDetails(person.id))
         }
-        .map { ($0.results, $1.results, $2.results) }
+    }
+}
+
+struct SearchWithDetails: TransactionBody {
+    var body: AnyTransaction<String, [Media]> {
+        Pipe {
+            Search().map(\.results)
+            ForEach {
+                GetDetails()
+            }
+        }
         .eraseToAnyTransaction()
     }
 }

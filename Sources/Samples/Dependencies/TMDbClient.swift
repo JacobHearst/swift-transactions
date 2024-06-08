@@ -6,9 +6,10 @@ import Foundation
 import TMDb
 
 struct TMDbAPI {
-    var searchPeople: (String) async throws -> PersonPageableList
-    var searchMovies: (String) async throws -> MoviePageableList
-    var searchTV: (String) async throws -> TVSeriesPageableList
+    var search: (String) async throws -> MediaPageableList
+    var movieDetails: (Movie.ID) async throws -> Movie
+    var tvDetails: (TVSeries.ID) async throws -> TVSeries
+    var personDetails: (Person.ID) async throws -> Person
 }
 
 extension TMDbAPI {
@@ -16,15 +17,10 @@ extension TMDbAPI {
         let client = TMDbClient(apiKey: "")
 
         return TMDbAPI(
-            searchPeople: {
-                try await client.search.searchPeople(query: $0, filter: nil, page: nil, language: nil)
-            },
-            searchMovies: {
-                try await client.search.searchMovies(query: $0, filter: nil, page: nil, language: nil)
-            },
-            searchTV: {
-                try await client.search.searchTVSeries(query: $0, filter: nil, page: nil, language: nil)
-            }
+            search: { try await client.search.searchAll(query: $0, filter: nil, page: nil, language: nil) },
+            movieDetails: { try await client.movies.details(forMovie: $0, language: nil) },
+            tvDetails: { try await client.tvSeries.details(forTVSeries: $0, language: nil) },
+            personDetails: { try await client.people.details(forPerson: $0, language: nil) }
         )
     }
 }
